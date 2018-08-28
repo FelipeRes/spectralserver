@@ -1,7 +1,7 @@
 var net = require('net');
 var JsonSocket = require('json-socket');
 // Configuration parameters
-var HOST = '0.0.0.0';
+var HOST = 'localhost';
 var PORT = 1234;
  
 // Create Server instance 
