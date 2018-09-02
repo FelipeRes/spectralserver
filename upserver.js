@@ -16,10 +16,11 @@ function onClientConnected(socket) {
 
     socket.on('data', function(data) {
       var info = ''+data;
+      console.log(data);
       var result =  info.split('&');
-      console.log("Splited data :"+result);
+      //console.log("Splited data :"+result);
       jsonData = JSON.parse(result[0]);
-      console.log("Processed data: %j",jsonData);
+      //console.log("Processed data: %j",jsonData);
 
       if(jsonData.protocol == "create_game"){
         games[jsonData.sessionId] = {"host":jsonData.host,"phantoms":[],"agents":jsonData.agents};
