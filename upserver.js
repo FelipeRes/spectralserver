@@ -46,7 +46,6 @@ function onClientConnected(socket) {
       console.log("Processed data: %j",jsonData.length);
     }catch(err){
       console.log("Ocorreu um erro: %j",err);
-      console.log(result)
       return;
     }
 
