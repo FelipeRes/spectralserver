@@ -13,36 +13,20 @@ server.listen(PORT, HOST, function() {
 function onClientConnected(socket) {
     socket = new JsonSocket(socket);
     console.log("A new client has conected");
+    var completeData = '';
 
     socket.on('data', function(data) {
-      var info = ''+data;
+      //var info = ''+data;
       //console.log(info);
-      var result =  info.split('&');
+      completeData += data;
+      console.log(completeData);
+      var dataArray = completeData.split('&');
+      //console.log("Size:"+dataArray.length)
+      if(dataArray.length > 1) {
+        ProcessData(socket,dataArray[0]);
+        completeData = dataArray[1];
+      }
       //console.log("Splited data :"+result);
-      try{
-        jsonData = JSON.parse(result[0]);
-        console.log("Processed data: %j",jsonData.length);
-      }catch(err){
-        console.log("Ocorreu um erro: %j",err);
-        console.log(result)
-      }
-
-      if(jsonData.protocol == "create_game"){
-        games[jsonData.sessionId] = {"host":jsonData.host,"phantoms":[],"agents":jsonData.agents};
-        console.log("The new game was created! Host: " + jsonData.host.label)
-        socket.sendMessage({"protocol":"create_game","result":"sucess","message":"Your game was creatd with sucess!"});
-      }
-      if(jsonData.protocol == "update_game"){
-        games[jsonData.sessionId].host = jsonData.host;
-        games[jsonData.sessionId].agents = jsonData.agents;
-        //console.log("The game has updated " + games[jsonData.sessionId].phantoms)
-        socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated","phantoms":games[jsonData.sessionId].phantoms})
-      }
-      if(jsonData.protocol == "join_game"){
-        console.log("A new player was joined to server: "+jsonData.client);
-        games[jsonData.sessionId].phantoms.push(jsonData.client);
-        console.log("Phantoms of the game: "+games[jsonData.sessionId].phantoms);
-      }
 
       //console.log(games[jsonData.sessionId].phantoms);
 
@@ -55,5 +39,33 @@ function onClientConnected(socket) {
       
     });
   };
+
+  function ProcessData(socket, data){
+    try{
+      jsonData = JSON.parse(data);
+      console.log("Processed data: %j",jsonData.length);
+    }catch(err){
+      console.log("Ocorreu um erro: %j",err);
+      console.log(result)
+      return;
+    }
+
+    if(jsonData.protocol == "create_game"){
+      games[jsonData.sessionId] = {"host":jsonData.host,"phantoms":[],"agents":jsonData.agents};
+      console.log("The new game was created! Host: " + jsonData.host.label)
+      socket.sendMessage({"protocol":"create_game","result":"sucess","message":"Your game was creatd with sucess!"});
+    }
+    if(jsonData.protocol == "update_game"){
+      games[jsonData.sessionId].host = jsonData.host;
+      games[jsonData.sessionId].agents = jsonData.agents;
+      //console.log("The game has updated " + games[jsonData.sessionId].phantoms)
+      socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated","phantoms":games[jsonData.sessionId].phantoms})
+    }
+    if(jsonData.protocol == "join_game"){
+      console.log("A new player was joined to server: "+jsonData.client);
+      games[jsonData.sessionId].phantoms.push(jsonData.client);
+      console.log("Phantoms of the game: "+games[jsonData.sessionId].phantoms);
+    }
+  }
   
   
