@@ -13,23 +13,23 @@ server.listen(PORT, HOST, function() {
 });
  
 function onClientConnected(sock) {
-  sock = new JsonSocket(sock);  
-  console.log(sock)
-  var remoteAddress = sock.remoteAddress + ':' + sock.remotePort;
-  console.log('new client connected: %s', remoteAddress);
-
+  sock = new JsonSocket(sock);
+  console.log("A new client has conected")
   sock.on('data', function(data) {
     var info = '';
     info += data;
-    jsonData = JSON.parse(info);
+    var result =  info.split('#');
+    jsonData = JSON.parse(result[0]);
+    console.log("Processed data:"+jsonData);
     if(jsonData.protocol == "create_game"){
       sock.key = jsonData.sessionId;
       sock.isHost = true;
       games[jsonData.sessionId] = {"host_agents":jsonData.host_agents,"client_agents":[]};
-      console.log(games);
+      console.log("The game was created: "+games);
       sock.sendMessage({"response":games[jsonData.sessionId]});
     }
     if(jsonData.protocol == "update_game"){
+      console.log(jsonData);
       games[jsonData.sessionId] = {"host_agents":jsonData.host_agents,"client_agents":games[jsonData.sessionId].client_agents};
       sock.sendMessage({"client_agents":games[jsonData.sessionId].client_agents});
     }
@@ -72,6 +72,7 @@ function onClientConnected(sock) {
     console.log(games);
   });
   sock.on('error', function (err) {
-    console.log('Connection %s error: %s', remoteAddress, err.message);
+    console.log(err);
   });
 };
+
