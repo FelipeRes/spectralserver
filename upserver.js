@@ -64,6 +64,16 @@ function onClientConnected(socket) {
       console.log("A new player was joined to server: %j",jsonData.client);
       games[jsonData.sessionId].phantoms.push(jsonData.client);
       console.log("Phantoms of the game: %j",games[jsonData.sessionId].phantoms);
+      socket.sendMessage({"protocol":"join_game","result":"sucess","message":"Your game was creatd with sucess!"});
+    }
+    if(jsonData.protocol == "sync_game"){
+      for(var i = 0; i <  games[jsonData.sessionId].phantoms.length; i++) {
+        if (games[jsonData.sessionId].phantoms[i].id == jsonData.client.id) {
+          games[jsonData.sessionId].phantoms[i] = jsonData.client;
+            break;
+        }
+      }
+      socket.sendMessage({"protocol":"sync_game","result":"sucess","message":"Your game was update with sucess!"});
     }
   }
   
