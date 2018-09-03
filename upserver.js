@@ -7,7 +7,7 @@ var server = net.createServer(onClientConnected);
 var games = {};
 
 server.listen(PORT, HOST, function() {  
-    //console.log('server listening on %j', server.address());
+    console.log('server listening on %j', server.address());
 });
 
 function onClientConnected(socket) {
@@ -57,7 +57,7 @@ function onClientConnected(socket) {
     if(jsonData.protocol == "update_game"){
       games[jsonData.sessionId].host = jsonData.host;
       games[jsonData.sessionId].agents = jsonData.agents;
-      console.log("The game has updated: %j",games[jsonData.sessionId])
+      //console.log("The game has updated: %j",games[jsonData.sessionId])
       socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated","phantoms":games[jsonData.sessionId].phantoms})
     }
     if(jsonData.protocol == "join_game"){
