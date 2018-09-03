@@ -61,9 +61,9 @@ function onClientConnected(socket) {
       socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated","phantoms":games[jsonData.sessionId].phantoms})
     }
     if(jsonData.protocol == "join_game"){
-      console.log("A new player was joined to server: "+jsonData.client);
+      console.log("A new player was joined to server: %j",jsonData.client);
       games[jsonData.sessionId].phantoms.push(jsonData.client);
-      console.log("Phantoms of the game: "+games[jsonData.sessionId].phantoms);
+      console.log("Phantoms of the game: %j",games[jsonData.sessionId].phantoms);
     }
   }
   
