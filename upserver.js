@@ -12,7 +12,7 @@ server.listen(PORT, HOST, function() {
 
 function onClientConnected(socket) {
     socket = new JsonSocket(socket);
-    //console.log("A new client has conected");
+    console.log("A new client has conected");
     var completeData = '';
 
     socket.on('data', function(data) {
@@ -57,7 +57,7 @@ function onClientConnected(socket) {
     if(jsonData.protocol == "update_game"){
       games[jsonData.sessionId].host = jsonData.host;
       games[jsonData.sessionId].agents = jsonData.agents;
-      //console.log("The game has updated " + games[jsonData.sessionId].phantoms)
+      console.log("The game has updated j%",games[jsonData.sessionId])
       socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated","phantoms":games[jsonData.sessionId].phantoms})
     }
     if(jsonData.protocol == "join_game"){
