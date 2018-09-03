@@ -43,9 +43,9 @@ function onClientConnected(socket) {
   function ProcessData(socket, data){
     try{
       jsonData = JSON.parse(data);
-      //console.log("Processed data: %j",jsonData.length);
+      //console.log("Processed data: %j",jsonData.protocol);
     }catch(err){
-      //console.log("Ocorreu um erro: %j",err);
+      console.log("Ocorreu um erro: %j",err);
       return;
     }
 
