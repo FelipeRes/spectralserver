@@ -55,6 +55,7 @@ function onClientConnected(sock) {
     }
   });
   sock.on('close',  function () {
+    console.log("acabou")
     if(sock.isHost!=undefined){
       console.log('connection from %s closed', sock.key);
       delete games[sock.key]
@@ -69,7 +70,6 @@ function onClientConnected(sock) {
         }
       }
     }
-    console.log(games);
   });
   sock.on('error', function (err) {
     console.log(err);
