@@ -26,11 +26,13 @@ function onClientConnected(socket) {
     });
 
     socket.on('close',  function () {
+      console.log("A connection was closed");
+      console.log(socket.typeConnection );
       if(socket.typeConnection != undefined && socket.typeConnection == "host"){
         console.log('connection from %s closed', games[socket.key]);
         delete games[socket.key]
         socket.sendMessage({"protocol":"close_game","result":"sucess","message":"Your game are closed"});
-      }else if(socket.typeConnection != undefined && socket.typeConnection == "phantom" && games[socket.id] != undefined){
+      }else if(socket.typeConnection != undefined && socket.typeConnection == "phantom"){
         for(var i =0; i<games[socket.key].phantoms.length;i++){
           if(games[socket.key].phantoms[i].id == socket.id){
             games[socket.key].phantoms.splice(i, 1);
