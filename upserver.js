@@ -26,28 +26,18 @@ function onClientConnected(socket) {
     });
 
     socket.on('close',  function () {
-      console.log("A connection was closed");
-      console.log(socket.typeConnection );
       if(socket.typeConnection != undefined && socket.typeConnection == "host"){
         console.log('connection from %s closed', games[socket.key]);
         delete games[socket.key]
         socket.sendMessage({"protocol":"close_game","result":"sucess","message":"Your game are closed"});
-      }else if(socket.typeConnection != undefined && socket.typeConnection == "phantom"){
-        console.log('connection from %s closed', socket.typeConnection);
-        console.log("Phantoms of the game: %j",games[socket.key]);
-        console.log('-----------------------------------------------')
+      }else if(socket.typeConnection != undefined && socket.typeConnection == "phantom" && games[socket.id] != undefined){
         for(var i =0; i<games[socket.key].phantoms.length;i++){
-          console.log(games[socket.key].phantoms);
-          console.log(games[socket.key].phantoms[i]);
-          console.log(games[socket.key].phantoms[i].id);
-          console.log(socket.id);
           if(games[socket.key].phantoms[i].id == socket.id){
             games[socket.key].phantoms.splice(i, 1);
-            console.log('The phantom instance was destroyed?');
+            console.log('The phantom instance was destroyed');
           }
         }
       }
-      console.log("Phantoms of the game: %j",games[socket.key]);
     });
     socket.on('error', function (err) {
       console.log("A error was occured");
@@ -78,7 +68,6 @@ function onClientConnected(socket) {
     if(jsonData.protocol == "update_game"){
       games[jsonData.sessionId].host = jsonData.host;
       games[jsonData.sessionId].agents = jsonData.agents;
-      //console.log("The game has updated: %j",games[jsonData.sessionId])
       socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated!","phantoms":games[jsonData.sessionId].phantoms})
     }
     if(jsonData.protocol == "join_game"){
@@ -89,8 +78,7 @@ function onClientConnected(socket) {
           socket.id = jsonData.client.id;
           console.log("A new player was joined to server: %j",jsonData.client);
           games[jsonData.sessionId].phantoms.push(jsonData.client);
-          console.log("Phantoms of the game: %j",games[jsonData.sessionId].phantoms);
-          socket.sendMessage({"protocol":"join_game","result":"sucess","message":"Your game was creatd with sucess!"});
+          socket.sendMessage({"protocol":"join_game","result":"sucess","message":"Your game was creatd with sucess!","host":games[jsonData.sessionId].host,"phantoms":games[jsonData.sessionId].phantoms,"agents":games[jsonData.sessionId].agents});
         }else{
           socket.sendMessage({"protocol":"join_game","result":"fail","message":"This game already have 3 phantoms!"});
         }
@@ -106,7 +94,7 @@ function onClientConnected(socket) {
             break;
           }
         }
-        socket.sendMessage({"protocol":"sync_game","result":"sucess","message":"Your game was update with sucess!"});
+        socket.sendMessage({"protocol":"sync_game","result":"sucess","message":"Your game was creatd with sucess!","host":games[jsonData.sessionId].host,"phantoms":games[jsonData.sessionId].phantoms,"agents":games[jsonData.sessionId].agents});
       }else{
         socket.sendMessage({"protocol":"sync_game","result":"fail","message":"The server was closed unexpectedly!"});
       }

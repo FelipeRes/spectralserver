@@ -1,23 +1,18 @@
-var net = require('net');
-var HOST = '0.0.0.0';
-var PORT = 1234;
 
-var server = net.createServer(onClientConnected);  
-server.listen(PORT, HOST, function() {  
-  console.log('server listening on %j', server.address());
-});
- 
-function onClientConnected(socket) {
-  
-  console.log("A new client has conected")
-  socket.on('data', function(data) {
-   
-  });
-  socket.on('close', function(data) {
-    console.log('CLOSED: ' + socket.remoteAddress +' '+ socket.remotePort);
-});
-socket.on('error', function (err) {
-    console.log(err);
-  });
-};
 
+async function m1 (){
+  console.log("primeira funcao");
+}
+
+async function m2(mensagem, callback){
+  console.log(mensagem);
+  list = []
+  for(i=0;i<10000000;i++){
+    list.push(i)
+    list.splice(i,1)
+  }
+  callback();
+}
+
+m2('olá',m1)
+console.log("enquanto espera")
