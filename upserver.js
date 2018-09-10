@@ -13,16 +13,28 @@ server.listen(PORT, HOST, function() {
 function onClientConnected(socket) {
     socket = new JsonSocket(socket);
     var completeData = '';
-    socket.on('connect', function() {
-      console.log("A new client has conected");
-    });
-    socket.on('data', function(data) {
+    function waitData(data){
       completeData += data;
       var dataArray = completeData.split('&');
       if(dataArray.length > 1) {
         ProcessData(socket,dataArray[0]);
         completeData = dataArray[1];
       }
+    }
+
+    socket.on('connect', function() {
+      console.log("A new client has conected");
+    });
+    socket.on('data', function(data) {
+      setTimeout(function(){
+        waitData(data);
+      },0);
+      /*completeData += data;
+      var dataArray = completeData.split('&');
+      if(dataArray.length > 1) {
+        ProcessData(socket,dataArray[0]);
+        completeData = dataArray[1];
+      }*/
     });
 
     socket.on('close',  function () {
