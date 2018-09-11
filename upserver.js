@@ -32,7 +32,7 @@ function onClientConnected(socket) {
         console.log('connection from %s closed', games[socket.key]);
         delete games[socket.key]
         socket.sendMessage({"protocol":"close_game","result":"sucess","message":"Your game are closed"});
-      }else if(socket.typeConnection != undefined && socket.typeConnection == "phantom"){
+      }else if(socket.typeConnection != undefined && socket.typeConnection == "phantom" && games[socket.key] != undefined){
         for(var i =0; i<games[socket.key].phantoms.length;i++){
           if(games[socket.key].phantoms[i].id == socket.id){
             games[socket.key].phantoms.splice(i, 1);
@@ -46,61 +46,90 @@ function onClientConnected(socket) {
     });
   };
 
-  function ProcessData(socket, data){
+  async function ProcessData(socket, data){
     try{
       jsonData = JSON.parse(data);
     }catch(err){
       console.log("Ocorreu um erro: %j",err);
       return;
     }
-    if(games[jsonData.sessionId] != undefined){
-      //console.log(games[jsonData.sessionId]);
-    }
     if(jsonData.protocol == "create_game"){
-      if(games[jsonData.sessionId] == undefined){
-        socket.key = jsonData.sessionId;
-        socket.typeConnection = "host";
-        games[jsonData.sessionId] = {"host":jsonData.host,"phantoms":[],"agents":jsonData.agents};
-        console.log("The new game was created! Host: " + jsonData.host.label)
-        socket.sendMessage({"protocol":"create_game","result":"sucess","message":"Your game was creatd with sucess!"});
-      }else{
-        socket.sendMessage({"protocol":"create_game","result":"fail","message":"A game instance with this Id already is online!"});
+      try{
+        await CreateGame(socket,data);
+      }catch(err){
+        console.log("Ocorreu um erro na criacao do jogo: %j",err);
+        return;
       }
     }
     if(jsonData.protocol == "update_game"){
-      games[jsonData.sessionId].host = jsonData.host;
-      games[jsonData.sessionId].agents = jsonData.agents;
-      socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated!","phantoms":games[jsonData.sessionId].phantoms})
-    }
-    if(jsonData.protocol == "join_game"){
-      if(games[jsonData.sessionId] != undefined){
-        if(games[jsonData.sessionId].phantoms.length <= 2){
-          socket.key = jsonData.sessionId;
-          socket.typeConnection = "phantom";
-          socket.id = jsonData.client.id;
-          console.log("A new player was joined to server: %j",jsonData.client);
-          games[jsonData.sessionId].phantoms.push(jsonData.client);
-          socket.sendMessage({"protocol":"join_game","result":"sucess","message":"Your game was creatd with sucess!","host":games[jsonData.sessionId].host,"phantoms":games[jsonData.sessionId].phantoms,"agents":games[jsonData.sessionId].agents});
-        }else{
-          socket.sendMessage({"protocol":"join_game","result":"fail","message":"This game already have 3 phantoms!"});
-        }
-      }else{
-        socket.sendMessage({"protocol":"join_game","result":"fail","message":"There is nothing game session online with this Ids!"});
+      try{
+        await UpdateGame(socket,data);
+      }catch(err){
+        console.log("Ocorreu um erro na atualizacao do jogo: %j",err);
+        return;
       }
     }
-      if(jsonData.protocol == "sync_game"){
-        if(games[jsonData.sessionId] != undefined){
-        for(var i = 0; i <  games[jsonData.sessionId].phantoms.length; i++) {
-          if (games[jsonData.sessionId].phantoms[i].id == jsonData.client.id) {
-            games[jsonData.sessionId].phantoms[i] = jsonData.client;
-            break;
-          }
-        }
-        socket.sendMessage({"protocol":"sync_game","result":"sucess","message":"Your game was creatd with sucess!","host":games[jsonData.sessionId].host,"phantoms":games[jsonData.sessionId].phantoms,"agents":games[jsonData.sessionId].agents});
-      }else{
-        socket.sendMessage({"protocol":"sync_game","result":"fail","message":"The server was closed unexpectedly!"});
+    if(jsonData.protocol == "join_game"){
+      try{
+        await JoinGame(socket,data);
+      }catch(err){
+        console.log("Ocorreu um erro na entrada do jogo: %j",err);
+        return;
+      }
+    }
+    if(jsonData.protocol == "sync_game"){
+      try{
+        await SyncGame(socket, data);
+      }catch(err){
+        console.log("Ocorreu um erro na sincronizacao do jogo: %j",err);
+        return;
       }
     }
   }
   
-  
+
+  function CreateGame(socket, data){
+    if(games[jsonData.sessionId] == undefined){
+      socket.key = jsonData.sessionId;
+      socket.typeConnection = "host";
+      games[jsonData.sessionId] = {"host":jsonData.host,"phantoms":[],"agents":jsonData.agents};
+      console.log("The new game was created! Host: " + jsonData.host.label)
+      socket.sendMessage({"protocol":"create_game","result":"sucess","message":"Your game was creatd with sucess!"});
+    }else{
+      socket.sendMessage({"protocol":"create_game","result":"fail","message":"A game instance with this Id already is online!"});
+    }
+  }
+  function JoinGame(socket, data){
+    if(games[jsonData.sessionId] != undefined){
+      if(games[jsonData.sessionId].phantoms.length <= 2){
+        socket.key = jsonData.sessionId;
+        socket.typeConnection = "phantom";
+        socket.id = jsonData.client.id;
+        console.log("A new player was joined to server: %j",jsonData.client);
+        games[jsonData.sessionId].phantoms.push(jsonData.client);
+        socket.sendMessage({"protocol":"join_game","result":"sucess","message":"Your game was creatd with sucess!","host":games[jsonData.sessionId].host,"phantoms":games[jsonData.sessionId].phantoms,"agents":games[jsonData.sessionId].agents});
+      }else{
+        socket.sendMessage({"protocol":"join_game","result":"fail","message":"This game already have 3 phantoms!"});
+      }
+    }else{
+      socket.sendMessage({"protocol":"join_game","result":"fail","message":"There is nothing game session online with this Ids!"});
+    }
+  }
+  function UpdateGame(socket, data){
+    games[jsonData.sessionId].host = jsonData.host;
+    games[jsonData.sessionId].agents = jsonData.agents;
+    socket.sendMessage({"protocol":"update_game","result":"sucess","message":"Your game was updated!","phantoms":games[jsonData.sessionId].phantoms})
+  }
+  function SyncGame(socket, data){
+    if(games[jsonData.sessionId] != undefined){
+      for(var i = 0; i <  games[jsonData.sessionId].phantoms.length; i++) {
+        if (games[jsonData.sessionId].phantoms[i].id == jsonData.client.id) {
+          games[jsonData.sessionId].phantoms[i] = jsonData.client;
+          break;
+        }
+      }
+      socket.sendMessage({"protocol":"sync_game","result":"sucess","message":"Your game was creatd with sucess!","host":games[jsonData.sessionId].host,"phantoms":games[jsonData.sessionId].phantoms,"agents":games[jsonData.sessionId].agents});
+    }else{
+      socket.sendMessage({"protocol":"sync_game","result":"fail","message":"The server was closed unexpectedly!"});
+    }
+  }
